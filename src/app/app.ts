@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -23,6 +23,7 @@ import {
   faXmark,
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
+import { NotificationService } from './services/notification.service';
 
 type View = 'dashboard' | 'accounts' | 'transactions' | 'customers' | 'reports';
 type Operation = 'deposit' | 'withdrawal' | 'transfer';
@@ -70,6 +71,8 @@ interface ChartPoint {
   templateUrl: './app.html',
 })
 export class App {
+  private readonly notifications = inject(NotificationService);
+
   protected readonly faGauge = faGaugeHigh;
   protected readonly faWallet = faWallet;
   protected readonly faArrows = faArrowsRotate;
@@ -566,19 +569,11 @@ export class App {
   }
 
   private notify(icon: 'success' | 'error', title: string, text: string): void {
-    void import('sweetalert2').then(({ default: Swal }) =>
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon,
-        title,
-        text,
-        showConfirmButton: false,
-        timer: 3200,
-        timerProgressBar: true,
-        background: '#111a26',
-        color: '#e7edf5',
-      }),
-    );
+    if (icon === 'success') {
+      this.notifications.success(title, text);
+      return;
+    }
+
+    this.notifications.error(title, text);
   }
 }

@@ -27,7 +27,8 @@
             ],
             "styles": [
               "src/styles.css",
-              "src/app/app.css"
+              "src/app/app.css",
+              "node_modules/ngx-toastr/toastr.css"
             ],
             "allowedCommonJsDependencies": [
               "sweetalert2"
