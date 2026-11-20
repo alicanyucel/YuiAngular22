@@ -1,4 +1,18 @@
-# Yui
+# FOOTRA
+
+Cyberpunk görsel diline sahip finansal işlem ve para transferi arayüzü.
+
+**FOOTRA Alican Yücel tarafından hazırlandı**
+
+## Finansal işlem arayüzü
+
+Uygulama; müşteri ve hesap yönetimi, demo bakiye yükleme/çekme/transfer işlemleri,
+filtrelenebilir işlem geçmişi ve günlük/haftalık/aylık rapor ekranlarını içerir.
+
+> Bu çalışma yalnızca tarayıcı içi bir arayüz prototipidir. Veriler oturum belleğinde
+> tutulur ve sayfa yenilendiğinde sıfırlanır. Gerçek para hareketi, kalıcı kayıt,
+> kullanıcı doğrulaması veya eşzamanlı işlem güvenliği sağlamaz. Üretim kullanımı için
+> güvenli bir backend, veritabanı işlemleri ve kimlik doğrulama gerekir.
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.3.0.
 
