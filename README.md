@@ -26,6 +26,18 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Docker Compose
+
+Build and start the production SSR container:
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:4000/`. To stop the container, run `docker compose down`.
+Set `PORT` in the environment to change the host port.
+For a custom hostname, add it to `security.allowedHosts` in `angular.json` before building.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
