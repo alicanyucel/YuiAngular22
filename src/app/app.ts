@@ -24,46 +24,19 @@ import { NotificationService } from './services/notification.service';
 import { AppSidebar } from './components/sidebar/sidebar';
 import { AppTopbar } from './components/topbar/topbar';
 import { AppOperationModal } from './components/operation-modal/operation-modal';
-
-type View = 'dashboard' | 'accounts' | 'transactions' | 'customers' | 'reports';
-type Operation = 'deposit' | 'withdrawal' | 'transfer';
-type Modal = Operation | 'customer' | 'account' | null;
-type TransactionType = Operation | 'transfer-in' | 'transfer-out';
-type TransactionStatus = 'success' | 'failed' | 'pending';
-type SortOrder = 'newest' | 'oldest' | 'largest';
-type ReportPeriod = 'daily' | 'weekly' | 'monthly';
-
-export interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-}
-
-export interface Account {
-  id: string;
-  customerId: string;
-  name: string;
-  balance: number;
-  active: boolean;
-}
-
-export interface Transaction {
-  id: string;
-  reference: string;
-  accountId: string;
-  type: TransactionType;
-  amount: number;
-  createdAt: string;
-  status: TransactionStatus;
-  description: string;
-}
-
-export interface ChartPoint {
-  label: string;
-  count: number;
-  percent: number;
-}
+import type { Account } from './models/account.model';
+import type { ChartPoint } from './models/chart-point.model';
+import type { Customer } from './models/customer.model';
+import type { Transaction } from './models/transaction.model';
+import type {
+  Modal,
+  Operation,
+  ReportPeriod,
+  SortOrder,
+  TransactionStatus,
+  TransactionType,
+  View,
+} from './models/app-types';
 
 @Component({
   standalone: true,
