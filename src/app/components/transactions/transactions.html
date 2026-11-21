@@ -1,0 +1,25 @@
+<section class="page-heading">
+  <div><p class="eyebrow">HESAP HAREKETLERİ</p><h1>İşlem geçmişi</h1><p class="subheading">İşlemleri tarih, tür ve tutara göre filtreleyin.</p></div>
+  <button class="button button-primary" (click)="app.openOperation('transfer')"><fa-icon [icon]="app.faPlus" /> Yeni transfer</button>
+</section>
+<section class="panel filter-panel">
+  <label>İşlem türü<select [ngModel]="app.filterType()" (ngModelChange)="app.filterType.set($event); app.page.set(1)"><option value="">Tüm işlemler</option><option value="deposit">Para yükleme</option><option value="withdrawal">Para çekme</option><option value="transfer-in">Transfer girişi</option><option value="transfer-out">Transfer çıkışı</option></select></label>
+  <label>Başlangıç<input type="date" [ngModel]="app.dateFrom()" (ngModelChange)="app.dateFrom.set($event); app.page.set(1)" /></label>
+  <label>Bitiş<input type="date" [ngModel]="app.dateTo()" (ngModelChange)="app.dateTo.set($event); app.page.set(1)" /></label>
+  <label>Min. tutar (₺)<input type="number" min="0" [ngModel]="app.minAmount()" (ngModelChange)="app.minAmount.set($event); app.page.set(1)" /></label>
+  <label>Maks. tutar (₺)<input type="number" min="0" [ngModel]="app.maxAmount()" (ngModelChange)="app.maxAmount.set($event); app.page.set(1)" /></label>
+  <button class="button button-quiet" (click)="app.clearFilters()">Filtreleri temizle</button>
+</section>
+<section class="panel transactions-panel">
+  <div class="panel-heading"><div><h2>Tüm hareketler</h2><p>{{ app.filteredTransactions().length }} işlem listeleniyor</p></div><label class="sort-control">Sırala<select [ngModel]="app.sortOrder()" (ngModelChange)="app.sortOrder.set($event)"><option value="newest">En yeni</option><option value="oldest">En eski</option><option value="largest">Tutar (azalan)</option></select></label></div>
+  <div class="table-wrap">
+    <table><thead><tr><th>İŞLEM</th><th>İŞLEM NUMARASI</th><th>HESAP</th><th>TARİH</th><th>DURUM</th><th class="amount-cell">TUTAR</th></tr></thead>
+      <tbody>
+        @for (transaction of app.pagedTransactions(); track transaction.id) {
+          <tr><td><span class="type-cell"><span class="type-icon" [class.positive]="app.isInflow(transaction.type)" [class.negative]="!app.isInflow(transaction.type)"><fa-icon [icon]="app.transactionIcon(transaction.type)" /></span><span><strong>{{ app.transactionLabel(transaction.type) }}</strong><small>{{ transaction.description }}</small></span></span></td><td class="ref-cell">{{ transaction.reference }}</td><td>{{ app.accountName(transaction.accountId) }}</td><td>{{ transaction.createdAt | date:'dd.MM.yyyy, HH:mm' }}</td><td><span class="status-pill" [class]="transaction.status">{{ app.statusLabel(transaction.status) }}</span></td><td class="amount-cell" [class.positive-text]="app.isInflow(transaction.type)" [class.negative-text]="!app.isInflow(transaction.type)">{{ app.isInflow(transaction.type) ? '+' : '−' }}{{ app.formatMoney(transaction.amount) }}</td></tr>
+        } @empty { <tr><td colspan="6"><div class="empty-state">Filtrelerle eşleşen işlem bulunamadı.</div></td></tr> }
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination"><span>{{ app.filteredTransactions().length }} kayıttan {{ app.filteredTransactions().length ? (app.page() - 1) * app.pageSize + 1 : 0 }}–{{ Math.min(app.page() * app.pageSize, app.filteredTransactions().length) }} arası</span><div><button [disabled]="app.page() <= 1" (click)="app.page.update(value => value - 1)">Önceki</button><span>{{ app.page() }} / {{ app.pageCount() }}</span><button [disabled]="app.page() >= app.pageCount()" (click)="app.page.update(value => value + 1)">Sonraki</button></div></div>
+</section>

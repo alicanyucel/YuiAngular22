@@ -1,0 +1,32 @@
+@if (app.modal()) {
+  <div class="modal-backdrop" (click)="app.closeModal()">
+    <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="app.modalTitle()" (click)="$event.stopPropagation()">
+      <div class="modal-heading"><div><p class="eyebrow">FOOTRA · DEMO</p><h2>{{ app.modalTitle() }}</h2></div><button class="icon-button" aria-label="Kapat" (click)="app.closeModal()"><fa-icon [icon]="app.faClose" /></button></div>
+      @if (app.modal() === 'deposit' || app.modal() === 'withdrawal' || app.modal() === 'transfer') {
+        <form (ngSubmit)="app.submitOperation()">
+          <label>Kaynak hesap<select name="sourceAccount" [(ngModel)]="app.sourceAccountId" required><option value="" disabled>Hesap seçin</option>@for (account of app.activeAccounts(); track account.id) { <option [value]="account.id">{{ account.name }} · {{ app.formatMoney(account.balance) }}</option> }</select></label>
+          @if (app.modal() === 'transfer') {
+            <label>Alıcı hesap<select name="targetAccount" [(ngModel)]="app.targetAccountId" required><option value="" disabled>Alıcı hesap seçin</option>@for (account of app.activeAccounts(); track account.id) { @if (account.id !== app.sourceAccountId) { <option [value]="account.id">{{ account.name }} · {{ app.customerName(account.customerId) }}</option> } }</select></label>
+          }
+          <label>Tutar (₺)<input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" [(ngModel)]="app.amountInput" required /></label>
+          <label>Açıklama <span class="optional">(isteğe bağlı)</span><input name="description" maxlength="100" placeholder="İşlem açıklaması" [(ngModel)]="app.descriptionInput" /></label>
+          <p class="modal-note"><fa-icon [icon]="app.faInfo" /> Bu işlem yalnızca demo verisini günceller; gerçek para hareketi yapılmaz.</p>
+          <div class="modal-actions"><button type="button" class="button button-quiet" (click)="app.closeModal()">Vazgeç</button><button type="submit" class="button button-primary">İşlemi onayla</button></div>
+        </form>
+      } @else if (app.modal() === 'customer') {
+        <form (ngSubmit)="app.saveCustomer()">
+          <label>Ad soyad<input name="customerName" [(ngModel)]="app.customerNameInput" required maxlength="100" /></label>
+          <label>E-posta<input name="customerEmail" type="email" [(ngModel)]="app.customerEmailInput" required maxlength="150" /></label>
+          <label>Telefon<input name="customerPhone" type="tel" [(ngModel)]="app.customerPhoneInput" required maxlength="30" /></label>
+          <div class="modal-actions"><button type="button" class="button button-quiet" (click)="app.closeModal()">Vazgeç</button><button type="submit" class="button button-primary">Kaydet</button></div>
+        </form>
+      } @else {
+        <form (ngSubmit)="app.saveAccount()">
+          <label>Hesap sahibi<select name="owner" [(ngModel)]="app.newAccountCustomerId" required><option value="" disabled>Müşteri seçin</option>@for (customer of app.customers(); track customer.id) { <option [value]="customer.id">{{ customer.name }}</option> }</select></label>
+          <label>Hesap adı<input name="accountName" [(ngModel)]="app.newAccountName" required maxlength="60" placeholder="Örn. Birikim hesabı" /></label>
+          <div class="modal-actions"><button type="button" class="button button-quiet" (click)="app.closeModal()">Vazgeç</button><button type="submit" class="button button-primary">Hesap oluştur</button></div>
+        </form>
+      }
+    </section>
+  </div>
+}

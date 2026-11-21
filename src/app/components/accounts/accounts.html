@@ -1,0 +1,15 @@
+<section class="page-heading">
+  <div><p class="eyebrow">HESAP YÖNETİMİ</p><h1>Hesaplar</h1><p class="subheading">Hesap bakiyelerini ve durumlarını yönetin.</p></div>
+  <button class="button button-primary" (click)="app.openAccountModal()"><fa-icon [icon]="app.faPlus" /> Hesap oluştur</button>
+</section>
+<section class="account-grid">
+  @for (account of app.accounts(); track account.id) {
+    <article class="account-card" [class.account-disabled]="!account.active">
+      <div class="account-card-top"><span class="account-symbol"><fa-icon [icon]="app.faCard" /></span><button class="text-button" (click)="app.toggleAccount(account.id)">{{ account.active ? 'Pasife al' : 'Aktifleştir' }}</button></div>
+      <p class="account-kind">{{ account.name }}</p><strong class="account-card-balance">{{ app.formatMoney(account.balance) }}</strong>
+      <div class="account-card-meta"><span>{{ account.id }}</span><span class="status-pill" [class.success]="account.active" [class.failed]="!account.active">{{ account.active ? 'Aktif' : 'Pasif' }}</span></div>
+      <div class="account-owner">{{ app.customerName(account.customerId) }}</div>
+      <div class="account-card-actions"><button (click)="app.openOperation('deposit', account.id)">Para yükle</button><button (click)="app.openOperation('withdrawal', account.id)">Para çek</button></div>
+    </article>
+  }
+</section>

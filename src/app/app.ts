@@ -1,8 +1,5 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterOutlet } from '@angular/router';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import {
   faArrowDown,
   faArrowRightArrowLeft,
@@ -24,6 +21,9 @@ import {
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { NotificationService } from './services/notification.service';
+import { AppSidebar } from './components/sidebar/sidebar';
+import { AppTopbar } from './components/topbar/topbar';
+import { AppOperationModal } from './components/operation-modal/operation-modal';
 
 type View = 'dashboard' | 'accounts' | 'transactions' | 'customers' | 'reports';
 type Operation = 'deposit' | 'withdrawal' | 'transfer';
@@ -33,14 +33,14 @@ type TransactionStatus = 'success' | 'failed' | 'pending';
 type SortOrder = 'newest' | 'oldest' | 'largest';
 type ReportPeriod = 'daily' | 'weekly' | 'monthly';
 
-interface Customer {
+export interface Customer {
   id: string;
   name: string;
   email: string;
   phone: string;
 }
 
-interface Account {
+export interface Account {
   id: string;
   customerId: string;
   name: string;
@@ -48,7 +48,7 @@ interface Account {
   active: boolean;
 }
 
-interface Transaction {
+export interface Transaction {
   id: string;
   reference: string;
   accountId: string;
@@ -59,46 +59,53 @@ interface Transaction {
   description: string;
 }
 
-interface ChartPoint {
+export interface ChartPoint {
   label: string;
   count: number;
   percent: number;
 }
 
 @Component({
-  imports: [DatePipe, FormsModule, FontAwesomeModule, RouterOutlet],
+  standalone: true,
+  imports: [
+    RouterOutlet,
+    AppSidebar,
+    AppTopbar,
+    AppOperationModal,
+  ],
   selector: 'app-root',
   templateUrl: './app.html',
 })
 export class App {
   private readonly notifications = inject(NotificationService);
+  private readonly router = inject(Router);
 
-  protected readonly faGauge = faGaugeHigh;
-  protected readonly faWallet = faWallet;
-  protected readonly faArrows = faArrowsRotate;
-  protected readonly faUsers = faUsers;
-  protected readonly faChart = faChartLine;
-  protected readonly faPlus = faPlus;
-  protected readonly faDown = faArrowDown;
-  protected readonly faUp = faArrowUp;
-  protected readonly faTransfer = faArrowRightArrowLeft;
-  protected readonly faMore = faEllipsis;
-  protected readonly faBell = faBell;
-  protected readonly faCheck = faCircleCheck;
-  protected readonly faCard = faCreditCard;
-  protected readonly faBars = faBars;
-  protected readonly faSearch = faMagnifyingGlass;
-  protected readonly faClose = faXmark;
-  protected readonly faInfo = faCircleInfo;
-  protected readonly Math = Math;
-  protected readonly pageSize = 8;
+  public readonly faGauge = faGaugeHigh;
+  public readonly faWallet = faWallet;
+  public readonly faArrows = faArrowsRotate;
+  public readonly faUsers = faUsers;
+  public readonly faChart = faChartLine;
+  public readonly faPlus = faPlus;
+  public readonly faDown = faArrowDown;
+  public readonly faUp = faArrowUp;
+  public readonly faTransfer = faArrowRightArrowLeft;
+  public readonly faMore = faEllipsis;
+  public readonly faBell = faBell;
+  public readonly faCheck = faCircleCheck;
+  public readonly faCard = faCreditCard;
+  public readonly faBars = faBars;
+  public readonly faSearch = faMagnifyingGlass;
+  public readonly faClose = faXmark;
+  public readonly faInfo = faCircleInfo;
+  public readonly Math = Math;
+  public readonly pageSize = 8;
 
-  protected readonly customers = signal<Customer[]>([
+  public readonly customers = signal<Customer[]>([
     { id: 'CUS-001', name: 'Alican Yücel', email: 'alican@example.com', phone: '+90 532 000 00 01' },
     { id: 'CUS-002', name: 'Deniz Kaya', email: 'deniz@example.com', phone: '+90 532 000 00 02' },
     { id: 'CUS-003', name: 'Ece Demir', email: 'ece@example.com', phone: '+90 532 000 00 03' },
   ]);
-  protected readonly accounts = signal<Account[]>([
+  public readonly accounts = signal<Account[]>([
     { id: 'TR-001-0042', customerId: 'CUS-001', name: 'Günlük hesap', balance: 284750, active: true },
     { id: 'TR-001-0088', customerId: 'CUS-001', name: 'Birikim hesabı', balance: 1250000, active: true },
     { id: 'TR-002-0134', customerId: 'CUS-002', name: 'Vadesiz hesap', balance: 865420, active: true },
@@ -108,7 +115,7 @@ export class App {
   private readonly now = new Date();
   private sequence = 12;
   private accountSequence = 202;
-  protected readonly transactions = signal<Transaction[]>([
+  public readonly transactions = signal<Transaction[]>([
     this.seedTransaction(12, 0, 'TR-001-0042', 'deposit', 125000, 'Maaş yüklemesi'),
     this.seedTransaction(11, 0, 'TR-001-0088', 'transfer-in', 50000, 'Deniz Kaya · Gelen transfer', 'FT-2026-000010'),
     this.seedTransaction(10, 0, 'TR-002-0134', 'transfer-out', 50000, 'Alican Yücel · Para transferi', 'FT-2026-000010'),
@@ -123,61 +130,61 @@ export class App {
     this.seedTransaction(1, 6, 'TR-001-0042', 'transfer-out', 18000, 'Ece Demir · Para transferi', 'FT-2026-000001'),
   ]);
 
-  protected readonly view = signal<View>('dashboard');
-  protected readonly modal = signal<Modal>(null);
-  protected readonly menuOpen = signal(false);
-  protected readonly page = signal(1);
-  protected readonly filterType = signal<TransactionType | ''>('');
-  protected readonly dateFrom = signal('');
-  protected readonly dateTo = signal('');
-  protected readonly minAmount = signal<number | null>(null);
-  protected readonly maxAmount = signal<number | null>(null);
-  protected readonly sortOrder = signal<SortOrder>('newest');
-  protected readonly reportPeriod = signal<ReportPeriod>('daily');
-  protected sourceAccountId = '';
-  protected targetAccountId = '';
-  protected amountInput: number | null = null;
-  protected descriptionInput = '';
-  protected customerSearch = '';
-  protected customerNameInput = '';
-  protected customerEmailInput = '';
-  protected customerPhoneInput = '';
-  protected newAccountCustomerId = '';
-  protected newAccountName = '';
-  protected customerEditId: string | null = null;
+  public readonly view = signal<View>('dashboard');
+  public readonly modal = signal<Modal>(null);
+  public readonly menuOpen = signal(false);
+  public readonly page = signal(1);
+  public readonly filterType = signal<TransactionType | ''>('');
+  public readonly dateFrom = signal('');
+  public readonly dateTo = signal('');
+  public readonly minAmount = signal<number | null>(null);
+  public readonly maxAmount = signal<number | null>(null);
+  public readonly sortOrder = signal<SortOrder>('newest');
+  public readonly reportPeriod = signal<ReportPeriod>('daily');
+  public sourceAccountId = '';
+  public targetAccountId = '';
+  public amountInput: number | null = null;
+  public descriptionInput = '';
+  public customerSearch = '';
+  public customerNameInput = '';
+  public customerEmailInput = '';
+  public customerPhoneInput = '';
+  public newAccountCustomerId = '';
+  public newAccountName = '';
+  public customerEditId: string | null = null;
 
-  protected readonly activeAccounts = computed(() => this.accounts().filter((account) => account.active));
-  protected readonly totalBalance = computed(() =>
+  public readonly activeAccounts = computed(() => this.accounts().filter((account) => account.active));
+  public readonly totalBalance = computed(() =>
     this.accounts().reduce((sum, account) => sum + account.balance, 0),
   );
-  protected readonly successfulTransactions = computed(
+  public readonly successfulTransactions = computed(
     () => this.transactions().filter((transaction) => transaction.status === 'success').length,
   );
-  protected readonly failedTransactions = computed(
+  public readonly failedTransactions = computed(
     () => this.transactions().filter((transaction) => transaction.status === 'failed').length,
   );
-  protected readonly totalInflow = computed(() =>
+  public readonly totalInflow = computed(() =>
     this.transactions()
       .filter((transaction) => transaction.status === 'success' && this.isInflow(transaction.type))
       .reduce((sum, transaction) => sum + transaction.amount, 0),
   );
-  protected readonly totalOutflow = computed(() =>
+  public readonly totalOutflow = computed(() =>
     this.transactions()
       .filter((transaction) => transaction.status === 'success' && !this.isInflow(transaction.type))
       .reduce((sum, transaction) => sum + transaction.amount, 0),
   );
-  protected readonly successRate = computed(() => {
+  public readonly successRate = computed(() => {
     const finished = this.successfulTransactions() + this.failedTransactions();
     return finished ? Math.round((this.successfulTransactions() / finished) * 100) : 0;
   });
-  protected readonly pageTitle = computed(() => ({
+  public readonly pageTitle = computed(() => ({
     dashboard: 'Genel Bakış',
     accounts: 'Hesaplar',
     transactions: 'İşlem Geçmişi',
     customers: 'Müşteriler',
     reports: 'Raporlar',
   })[this.view()]);
-  protected readonly filteredTransactions = computed(() => {
+  public readonly filteredTransactions = computed(() => {
     const from = this.dateFrom();
     const to = this.dateTo();
     const min = this.minAmount();
@@ -199,14 +206,14 @@ export class App {
       return direction * a.createdAt.localeCompare(b.createdAt);
     });
   });
-  protected readonly pagedTransactions = computed(() =>
+  public readonly pagedTransactions = computed(() =>
     this.filteredTransactions().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize),
   );
-  protected readonly pageCount = computed(() =>
+  public readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.filteredTransactions().length / this.pageSize)),
   );
-  protected readonly dailyReport = computed(() => this.makeChartPoints());
-  protected readonly transactionBreakdown = computed(() => {
+  public readonly dailyReport = computed(() => this.makeChartPoints());
+  public readonly transactionBreakdown = computed(() => {
     const types: TransactionType[] = ['deposit', 'withdrawal', 'transfer-in', 'transfer-out'];
     const labels = ['Para yükleme', 'Para çekme', 'Transfer girişi', 'Transfer çıkışı'];
     const counts = types.map(
@@ -221,18 +228,41 @@ export class App {
     }));
   });
 
-  protected setView(view: View): void {
-    this.view.set(view);
-    this.menuOpen.set(false);
+  constructor() {
+    this.syncViewWithUrl(this.router.url);
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.syncViewWithUrl(event.urlAfterRedirects);
+      }
+    });
   }
 
-  protected recentTransactions(): Transaction[] {
+  private syncViewWithUrl(url: string): void {
+    const segment = url.split(/[/?]/)[1] as View | undefined;
+    if (
+      segment === 'dashboard' ||
+      segment === 'accounts' ||
+      segment === 'transactions' ||
+      segment === 'customers' ||
+      segment === 'reports'
+    ) {
+      this.view.set(segment);
+    }
+  }
+
+  public setView(view: View): void {
+    this.view.set(view);
+    this.menuOpen.set(false);
+    void this.router.navigate(['/', view]);
+  }
+
+  public recentTransactions(): Transaction[] {
     return [...this.transactions()]
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 5);
   }
 
-  protected filteredCustomers(): Customer[] {
+  public filteredCustomers(): Customer[] {
     const term = this.customerSearch.trim().toLocaleLowerCase('tr-TR');
     return this.customers().filter(
       (customer) =>
@@ -242,19 +272,19 @@ export class App {
     );
   }
 
-  protected customerName(id: string): string {
+  public customerName(id: string): string {
     return this.customers().find((customer) => customer.id === id)?.name ?? 'Bilinmeyen müşteri';
   }
 
-  protected accountName(id: string): string {
+  public accountName(id: string): string {
     return this.accounts().find((account) => account.id === id)?.name ?? id;
   }
 
-  protected customerAccountCount(customerId: string): number {
+  public customerAccountCount(customerId: string): number {
     return this.accounts().filter((account) => account.customerId === customerId).length;
   }
 
-  protected initials(name: string): string {
+  public initials(name: string): string {
     return name
       .split(/\s+/)
       .slice(0, 2)
@@ -263,11 +293,11 @@ export class App {
       .toLocaleUpperCase('tr-TR');
   }
 
-  protected formatMoney(amountInKurus: number): string {
+  public formatMoney(amountInKurus: number): string {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amountInKurus / 100);
   }
 
-  protected transactionLabel(type: TransactionType): string {
+  public transactionLabel(type: TransactionType): string {
     return {
       deposit: 'Para yükleme',
       withdrawal: 'Para çekme',
@@ -277,19 +307,19 @@ export class App {
     }[type];
   }
 
-  protected statusLabel(status: TransactionStatus): string {
+  public statusLabel(status: TransactionStatus): string {
     return { success: 'Başarılı', failed: 'Başarısız', pending: 'Beklemede' }[status];
   }
 
-  protected isInflow(type: TransactionType): boolean {
+  public isInflow(type: TransactionType): boolean {
     return type === 'deposit' || type === 'transfer-in';
   }
 
-  protected transactionIcon(type: TransactionType): IconDefinition {
+  public transactionIcon(type: TransactionType): IconDefinition {
     return type === 'deposit' || type === 'transfer-in' ? faArrowDown : faArrowUp;
   }
 
-  protected clearFilters(): void {
+  public clearFilters(): void {
     this.filterType.set('');
     this.dateFrom.set('');
     this.dateTo.set('');
@@ -299,7 +329,7 @@ export class App {
     this.page.set(1);
   }
 
-  protected openOperation(operation: Operation, accountId?: string): void {
+  public openOperation(operation: Operation, accountId?: string): void {
     const active = this.activeAccounts();
     if (!active.length) {
       this.notify('error', 'Aktif hesap bulunamadı', 'İşlem yapabilmek için önce aktif bir hesap oluşturun.');
@@ -312,7 +342,7 @@ export class App {
     this.modal.set(operation);
   }
 
-  protected modalTitle(): string {
+  public modalTitle(): string {
     const titles: Record<Exclude<Modal, null>, string> = {
       deposit: 'Hesaba para yükle',
       withdrawal: 'Hesaptan para çek',
@@ -324,11 +354,11 @@ export class App {
     return current ? titles[current] : '';
   }
 
-  protected closeModal(): void {
+  public closeModal(): void {
     this.modal.set(null);
   }
 
-  protected submitOperation(): void {
+  public submitOperation(): void {
     const modal = this.modal();
     const amount = this.amountInput === null ? 0 : Math.round(this.amountInput * 100);
     if ((modal !== 'deposit' && modal !== 'withdrawal' && modal !== 'transfer') || amount <= 0) {
@@ -384,7 +414,7 @@ export class App {
     this.notify('success', 'İşlem tamamlandı', 'Demo hesabı ve işlem geçmişi güncellendi.');
   }
 
-  protected openCustomerModal(customer?: Customer): void {
+  public openCustomerModal(customer?: Customer): void {
     this.customerEditId = customer?.id ?? null;
     this.customerNameInput = customer?.name ?? '';
     this.customerEmailInput = customer?.email ?? '';
@@ -392,7 +422,7 @@ export class App {
     this.modal.set('customer');
   }
 
-  protected saveCustomer(): void {
+  public saveCustomer(): void {
     const name = this.customerNameInput.trim();
     const email = this.customerEmailInput.trim();
     const phone = this.customerPhoneInput.trim();
@@ -415,7 +445,7 @@ export class App {
     this.notify('success', 'Müşteri kaydedildi', 'Müşteri listesi güncellendi.');
   }
 
-  protected openAccountModal(): void {
+  public openAccountModal(): void {
     if (!this.customers().length) {
       this.notify('error', 'Müşteri bulunamadı', 'Hesap oluşturmak için önce müşteri ekleyin.');
       return;
@@ -425,7 +455,7 @@ export class App {
     this.modal.set('account');
   }
 
-  protected saveAccount(): void {
+  public saveAccount(): void {
     const name = this.newAccountName.trim();
     if (!name || !this.customers().some((customer) => customer.id === this.newAccountCustomerId)) {
       this.notify('error', 'Hesap bilgileri geçersiz', 'Hesap sahibi ve hesap adını kontrol edin.');
@@ -441,7 +471,7 @@ export class App {
     this.notify('success', 'Hesap oluşturuldu', `${name} aktif hesaplara eklendi.`);
   }
 
-  protected toggleAccount(id: string): void {
+  public toggleAccount(id: string): void {
     const account = this.accounts().find((item) => item.id === id);
     if (!account) return;
     this.accounts.update((accounts) =>
@@ -450,7 +480,7 @@ export class App {
     this.notify('success', 'Hesap durumu güncellendi', `${account.name} ${account.active ? 'pasife alındı' : 'aktifleştirildi'}.`);
   }
 
-  protected makeChartPoints(): ChartPoint[] {
+  public makeChartPoints(): ChartPoint[] {
     const now = this.now;
     const transactions = this.transactions().filter((transaction) => transaction.status === 'success');
     const points: { label: string; count: number }[] = [];

@@ -1,0 +1,31 @@
+<aside class="sidebar" [class.sidebar-open]="app.menuOpen()">
+  <a class="brand" href="#" aria-label="Footra ana sayfa">
+    <span class="brand-mark">F</span><span>FOOTRA</span>
+  </a>
+  <p class="nav-label">ÇALIŞMA ALANI</p>
+  <nav aria-label="Ana menü">
+    <button [class.active]="app.view() === 'dashboard'" (click)="app.setView('dashboard')">
+      <fa-icon [icon]="app.faGauge" /> <span>Genel Bakış</span>
+    </button>
+    <button [class.active]="app.view() === 'accounts'" (click)="app.setView('accounts')">
+      <fa-icon [icon]="app.faWallet" /> <span>Hesaplar</span>
+    </button>
+    <button [class.active]="app.view() === 'transactions'" (click)="app.setView('transactions')">
+      <fa-icon [icon]="app.faArrows" /> <span>İşlem Geçmişi</span>
+    </button>
+    <button [class.active]="app.view() === 'customers'" (click)="app.setView('customers')">
+      <fa-icon [icon]="app.faUsers" /> <span>Müşteriler</span>
+    </button>
+    <button [class.active]="app.view() === 'reports'" (click)="app.setView('reports')">
+      <fa-icon [icon]="app.faChart" /> <span>Raporlar</span>
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="environment"><span></span> DEMO ORTAMI</div>
+    <div class="profile">
+      <div class="avatar">AY</div>
+      <div><strong>Yönetici</strong><small>Operasyon</small></div>
+      <fa-icon class="profile-more" [icon]="app.faMore" />
+    </div>
+  </div>
+</aside>

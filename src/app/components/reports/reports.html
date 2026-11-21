@@ -1,0 +1,23 @@
+<section class="page-heading">
+  <div><p class="eyebrow">FİNANSAL ANALİZ</p><h1>Raporlar</h1><p class="subheading">İşlem hacmi ve finansal hareketlere genel bakış.</p></div>
+  <span class="period-label">TÜM DEMO DÖNEMİ</span>
+</section>
+<section class="metric-grid report-metrics">
+  <article class="metric-card"><div class="metric-top"><span>Toplam para girişi</span><span class="metric-icon green"><fa-icon [icon]="app.faDown" /></span></div><strong>{{ app.formatMoney(app.totalInflow()) }}</strong><small>Başarılı işlemler</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Toplam para çıkışı</span><span class="metric-icon pink"><fa-icon [icon]="app.faUp" /></span></div><strong>{{ app.formatMoney(app.totalOutflow()) }}</strong><small>Başarılı işlemler</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Başarılı işlem</span><span class="metric-icon cyan"><fa-icon [icon]="app.faCheck" /></span></div><strong>{{ app.successfulTransactions() }}</strong><small>{{ app.successRate() }}% başarı oranı</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Başarısız işlem</span><span class="metric-icon pink"><fa-icon [icon]="app.faClose" /></span></div><strong>{{ app.failedTransactions() }}</strong><small>Reddedilen işlemler</small></article>
+</section>
+<section class="report-grid">
+  <article class="panel chart-panel"><div class="panel-heading"><div><h2>{{ app.reportPeriod() === 'daily' ? 'Günlük' : app.reportPeriod() === 'weekly' ? 'Haftalık' : 'Aylık' }} işlem hacmi</h2><p>{{ app.reportPeriod() === 'daily' ? 'Son 7 gün' : app.reportPeriod() === 'weekly' ? 'Son 7 hafta' : 'Son 6 ay' }} · Başarılı işlem adedi</p></div><select class="period-select" aria-label="Rapor dönemi" [ngModel]="app.reportPeriod()" (ngModelChange)="app.reportPeriod.set($event)"><option value="daily">Günlük</option><option value="weekly">Haftalık</option><option value="monthly">Aylık</option></select></div>
+    <div class="chart-bars">@for (day of app.dailyReport(); track day.label) {
+      <div class="bar-column"><span class="bar-value">{{ day.count }}</span><div class="bar-track"><div class="bar-fill" [style.height.%]="day.percent"></div></div><small>{{ day.label }}</small></div>
+    }</div>
+  </article>
+  <article class="panel report-summary"><div class="panel-heading"><div><h2>İşlem dağılımı</h2><p>İşlem türüne göre adet</p></div></div>
+    @for (row of app.transactionBreakdown(); track row.label) {
+      <div class="breakdown-row"><div><span>{{ row.label }}</span><strong>{{ row.count }}</strong></div><div class="breakdown-track"><span [style.width.%]="row.percent"></span></div></div>
+    }
+  </article>
+</section>
+<p class="report-note">Raporlar yalnızca bu tarayıcı oturumundaki örnek verilerden oluşturulur.</p>

@@ -1,0 +1,44 @@
+<section class="page-heading">
+  <div><p class="eyebrow">FİNANSAL OPERASYONLAR</p><h1>Genel Bakış</h1><p class="subheading">Hesaplarınızı ve işlemlerinizi tek ekrandan yönetin.</p></div>
+  <button class="button button-primary" (click)="app.openOperation('deposit')"><fa-icon [icon]="app.faPlus" /> Yeni işlem</button>
+</section>
+<section class="metric-grid" aria-label="Finansal özet">
+  <article class="metric-card"><div class="metric-top"><span>Toplam bakiye</span><span class="metric-icon cyan"><fa-icon [icon]="app.faWallet" /></span></div><strong>{{ app.formatMoney(app.totalBalance()) }}</strong><small>{{ app.activeAccounts().length }} aktif hesapta</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Para girişi</span><span class="metric-icon green"><fa-icon [icon]="app.faDown" /></span></div><strong>{{ app.formatMoney(app.totalInflow()) }}</strong><small>Yükleme ve transfer girişleri</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Para çıkışı</span><span class="metric-icon pink"><fa-icon [icon]="app.faUp" /></span></div><strong>{{ app.formatMoney(app.totalOutflow()) }}</strong><small>Çekim ve transfer çıkışları</small></article>
+  <article class="metric-card"><div class="metric-top"><span>Başarılı işlemler</span><span class="metric-icon violet"><fa-icon [icon]="app.faCheck" /></span></div><strong>{{ app.successfulTransactions() }}</strong><small>{{ app.transactions().length }} kayıtlı hareket</small></article>
+</section>
+<section class="dashboard-grid">
+  <article class="panel accounts-panel">
+    <div class="panel-heading"><div><h2>Hesaplarım</h2><p>Bakiyeler ve hesap durumları</p></div><button class="text-button" (click)="app.setView('accounts')">Tümünü gör <span>→</span></button></div>
+    <div class="account-list">
+      @for (account of app.accounts().slice(0, 3); track account.id) {
+        <div class="account-row">
+          <div class="account-symbol"><fa-icon [icon]="app.faCard" /></div>
+          <div class="account-info"><strong>{{ account.name }}</strong><small>{{ account.id }} · {{ app.customerName(account.customerId) }}</small></div>
+          <div class="account-balance"><strong>{{ app.formatMoney(account.balance) }}</strong><small [class.inactive-text]="!account.active">{{ account.active ? 'Aktif' : 'Pasif' }}</small></div>
+        </div>
+      } @empty { <div class="empty-state">Henüz hesap bulunmuyor.</div> }
+    </div>
+  </article>
+  <article class="panel quick-panel">
+    <div class="panel-heading"><div><h2>Hızlı işlemler</h2><p>Demo hesabında anında deneyin</p></div></div>
+    <div class="quick-actions">
+      <button (click)="app.openOperation('deposit')"><span class="quick-icon deposit"><fa-icon [icon]="app.faDown" /></span><strong>Para yükle</strong><small>Hesaba bakiye ekle</small></button>
+      <button (click)="app.openOperation('withdrawal')"><span class="quick-icon withdraw"><fa-icon [icon]="app.faUp" /></span><strong>Para çek</strong><small>Bakiyeden düş</small></button>
+      <button (click)="app.openOperation('transfer')"><span class="quick-icon transfer"><fa-icon [icon]="app.faTransfer" /></span><strong>Para transferi</strong><small>Hesaplar arası aktar</small></button>
+    </div>
+  </article>
+</section>
+<section class="panel transactions-panel">
+  <div class="panel-heading"><div><h2>Son işlemler</h2><p>Hesaplarınızdaki en güncel hareketler</p></div><button class="text-button" (click)="app.setView('transactions')">İşlem geçmişi <span>→</span></button></div>
+  <div class="table-wrap">
+    <table><thead><tr><th>İŞLEM</th><th>İŞLEM NUMARASI</th><th>TARİH</th><th>DURUM</th><th class="amount-cell">TUTAR</th></tr></thead>
+      <tbody>
+        @for (transaction of app.recentTransactions(); track transaction.id) {
+          <tr><td><span class="type-cell"><span class="type-icon" [class.positive]="app.isInflow(transaction.type)" [class.negative]="!app.isInflow(transaction.type)"><fa-icon [icon]="app.transactionIcon(transaction.type)" /></span><span><strong>{{ app.transactionLabel(transaction.type) }}</strong><small>{{ transaction.description }}</small></span></span></td><td class="ref-cell">{{ transaction.reference }}</td><td>{{ transaction.createdAt | date:'dd.MM.yyyy, HH:mm' }}</td><td><span class="status-pill" [class]="transaction.status">{{ app.statusLabel(transaction.status) }}</span></td><td class="amount-cell" [class.positive-text]="app.isInflow(transaction.type)" [class.negative-text]="!app.isInflow(transaction.type)">{{ app.isInflow(transaction.type) ? '+' : '−' }}{{ app.formatMoney(transaction.amount) }}</td></tr>
+        } @empty { <tr><td colspan="5"><div class="empty-state">Henüz işlem yok.</div></td></tr> }
+      </tbody>
+    </table>
+  </div>
+</section>
