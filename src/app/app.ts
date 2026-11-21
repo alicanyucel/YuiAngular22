@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, forwardRef, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import {
   faArrowDown,
@@ -21,13 +21,13 @@ import {
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { NotificationService } from './services/notification.service';
-import { AppSidebar } from './components/sidebar/sidebar';
-import { AppTopbar } from './components/topbar/topbar';
+import {AppSidebar} from './components/sidebar/sidebar';
 import { AppOperationModal } from './components/operation-modal/operation-modal';
 import type { Account } from './models/account.model';
 import type { ChartPoint } from './models/chart-point.model';
 import type { Customer } from './models/customer.model';
 import type { Transaction } from './models/transaction.model';
+import {AppTopbar} from  './components/topbar/topbar'
 import type {
   Modal,
   Operation,
@@ -43,8 +43,8 @@ import type {
   imports: [
     RouterOutlet,
     AppSidebar,
-    AppTopbar,
     AppOperationModal,
+    AppTopbar
   ],
   selector: 'app-root',
   templateUrl: './app.html',
