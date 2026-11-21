@@ -4,6 +4,7 @@ import { AppAccounts } from './components/accounts/accounts';
 import { AppTransactions } from './components/transactions/transactions';
 import { AppCustomers } from './components/customers/customers';
 import { AppReports } from './components/reports/reports';
+import { AppNotFound } from './components/not-found/not-found';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -12,5 +13,5 @@ export const routes: Routes = [
   { path: 'transactions', component: AppTransactions },
   { path: 'customers', component: AppCustomers },
   { path: 'reports', component: AppReports },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', component: AppNotFound },
 ];

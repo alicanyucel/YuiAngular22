@@ -11,6 +11,14 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+const applicationPaths = new Set([
+  '/',
+  '/dashboard',
+  '/accounts',
+  '/transactions',
+  '/customers',
+  '/reports',
+]);
 
 /**
  * Example Express Rest API endpoints can be defined here.
@@ -41,9 +49,23 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => {
+      if (!response) {
+        return next();
+      }
+
+      const pathname = new URL(req.originalUrl, 'http://localhost').pathname.replace(/\/+$/, '') || '/';
+      const result =
+        !applicationPaths.has(pathname) && response.status === 200
+          ? new Response(response.body, {
+              status: 404,
+              statusText: 'Not Found',
+              headers: response.headers,
+            })
+          : response;
+
+      return writeResponseToNodeResponse(result, res);
+    })
     .catch(next);
 });
 
