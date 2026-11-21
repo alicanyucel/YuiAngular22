@@ -1,8 +1,8 @@
 <div class="app-layout">
-  <aside class="sidebar"></aside>
+  <app-sidebar [app]="this" />
 
   <div class="workspace">
-    <header class="topbar"></header>
+    <app-topbar [app]="this" />
 
     <main class="page-content">
       <router-outlet />
@@ -14,3 +14,5 @@
     </footer>
   </div>
 </div>
+
+<app-operation-modal [app]="this" />
