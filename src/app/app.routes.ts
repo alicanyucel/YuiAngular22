@@ -6,7 +6,6 @@ import { AppCustomers } from './components/customers/customers';
 import { AppReports } from './components/reports/reports';
 import { AppNotFound } from './components/not-found/not-found';
 import { AppLogin } from './components/login/login';
-import { requireAuthentication } from './services/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: AppLogin },
