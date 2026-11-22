@@ -62,6 +62,7 @@ h1{margin-bottom:5px;font-size:26px;letter-spacing:-.03em}
 .panel-heading p{font-size:10px}
 .text-button{padding:4px 0;border:0;background:transparent;color:var(--cyan);font-size:10px;cursor:pointer}
 .text-button span{padding-left:4px}
+.customer-delete-button{display:inline-grid;margin-left:10px;color:var(--pink)}
 .account-list{display:grid}
 .account-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid #202b38}
 .account-symbol{display:grid;flex:0 0 35px;width:35px;height:35px;place-items:center;border:1px solid #293847;border-radius:8px;background:#172330;color:var(--cyan)}
@@ -138,7 +139,8 @@ input::placeholder{color:#5f6e7f}
 .modal-backdrop{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:#03070bc9;backdrop-filter:blur(4px)}
 .modal{width:min(100%,460px);max-height:90vh;overflow:auto;padding:23px;border:1px solid #30404e;border-radius:10px;background:#111a26;box-shadow:0 20px 70px #0008}
 .modal-heading{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
-.modal-heading h2{margin:0;font-size:19px}
+.modal-heading h2{margin:0;color:#fff!important;font-size:19px}
+.modal-heading .eyebrow{color:#fff!important}
 .modal form{display:grid;gap:15px}
 .modal form>label{font-size:11px}
 .modal form input,.modal form select{height:40px;font-size:12px}

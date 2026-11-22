@@ -15,9 +15,10 @@
         </form>
       } @else if (app.modal() === 'customer') {
         <form (ngSubmit)="app.saveCustomer()">
-          <label>Ad soyad<input name="customerName" [(ngModel)]="app.customerNameInput" required maxlength="100" /></label>
-          <label>E-posta<input name="customerEmail" type="email" [(ngModel)]="app.customerEmailInput" required maxlength="150" /></label>
-          <label>Telefon<input name="customerPhone" type="tel" [(ngModel)]="app.customerPhoneInput" required maxlength="30" /></label>
+          <label>Ad<input name="firstName" [(ngModel)]="app.customerFirstNameInput" required maxlength="100" /></label>
+          <label>Soyad<input name="lastName" [(ngModel)]="app.customerLastNameInput" maxlength="100" /></label>
+          <label>E-posta<input name="email" type="email" [(ngModel)]="app.customerEmailInput" maxlength="150" /></label>
+          <label>Telefon<input name="phoneNumber" type="tel" [(ngModel)]="app.customerPhoneInput" maxlength="30" /></label>
           <div class="modal-actions"><button type="button" class="button button-quiet" (click)="app.closeModal()">Vazgeç</button><button type="submit" class="button button-primary">Kaydet</button></div>
         </form>
       } @else {

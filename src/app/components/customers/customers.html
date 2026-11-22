@@ -6,7 +6,7 @@
   <div class="panel-heading"><div><h2>Müşteri listesi</h2><p>{{ app.customers().length }} kayıtlı müşteri</p></div><label class="search-control"><fa-icon [icon]="app.faSearch" /><input placeholder="Müşteri ara..." [(ngModel)]="app.customerSearch" /></label></div>
   <div class="table-wrap"><table><thead><tr><th>MÜŞTERİ</th><th>E-POSTA</th><th>TELEFON</th><th>HESAP SAYISI</th><th></th></tr></thead>
     <tbody>@for (customer of app.filteredCustomers(); track customer.id) {
-      <tr><td><span class="customer-cell"><span class="customer-avatar">{{ app.initials(customer.name) }}</span><strong>{{ customer.name }}</strong></span></td><td>{{ customer.email }}</td><td>{{ customer.phone }}</td><td>{{ app.customerAccountCount(customer.id) }}</td><td class="amount-cell"><button class="text-button" (click)="app.openCustomerModal(customer)">Düzenle</button></td></tr>
+      <tr><td><span class="customer-cell"><span class="customer-avatar">{{ app.initials(customer.name) }}</span><strong>{{ customer.name }}</strong></span></td><td>{{ customer.email }}</td><td>{{ customer.phone }}</td><td>{{ app.customerAccountCount(customer.id) }}</td><td class="amount-cell"><button class="text-button" (click)="app.openCustomerModal(customer)">Düzenle</button><button class="icon-button customer-delete-button" type="button" [attr.aria-label]="customer.name + ' müşterisini sil'" title="Müşteriyi sil" (click)="app.deleteCustomer(customer)"><fa-icon [icon]="app.faTrashCan" /></button></td></tr>
     }</tbody>
   </table></div>
 </section>

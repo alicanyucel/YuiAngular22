@@ -1,4 +1,6 @@
-import { Component, computed, forwardRef, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Component, computed, forwardRef, inject, PLATFORM_ID, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import {
   faArrowDown,
@@ -15,6 +17,7 @@ import {
   faGaugeHigh,
   faMagnifyingGlass,
   faPlus,
+  faTrashCan,
   faUsers,
   faWallet,
   faXmark,
@@ -37,6 +40,40 @@ import type {
   TransactionType,
   View,
 } from './models/app-types';
+import { environment } from './environments/environment';
+
+interface CustomerApiModel {
+  id?: string | number;
+  customerId?: string | number;
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  phone?: string | null;
+}
+
+interface CustomerCreatePayload {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phoneNumber: string | null;
+}
+
+interface CustomerUpdatePayload extends CustomerCreatePayload {
+  id: string;
+  isActive: boolean | null;
+}
+
+interface CustomerPagedResponse {
+  items?: CustomerApiModel[];
+  customers?: CustomerApiModel[];
+  data?: CustomerApiModel[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalPages?: number;
+}
 
 @Component({
   standalone: true,
@@ -52,6 +89,10 @@ import type {
 export class App {
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly browser = isPlatformBrowser(this.platformId);
+  private readonly apiUrl = environment.apiUrl.replace(/\/+$/, '');
 
   public readonly faGauge = faGaugeHigh;
   public readonly faWallet = faWallet;
@@ -59,6 +100,7 @@ export class App {
   public readonly faUsers = faUsers;
   public readonly faChart = faChartLine;
   public readonly faPlus = faPlus;
+  public readonly faTrashCan = faTrashCan;
   public readonly faDown = faArrowDown;
   public readonly faUp = faArrowUp;
   public readonly faTransfer = faArrowRightArrowLeft;
@@ -121,7 +163,8 @@ export class App {
   public amountInput: number | null = null;
   public descriptionInput = '';
   public customerSearch = '';
-  public customerNameInput = '';
+  public customerFirstNameInput = '';
+  public customerLastNameInput = '';
   public customerEmailInput = '';
   public customerPhoneInput = '';
   public newAccountCustomerId = '';
@@ -211,6 +254,7 @@ export class App {
         this.syncViewWithUrl(event.urlAfterRedirects);
       }
     });
+    this.loadCustomers();
   }
 
   private syncViewWithUrl(url: string): void {
@@ -392,33 +436,144 @@ export class App {
 
   public openCustomerModal(customer?: Customer): void {
     this.customerEditId = customer?.id ?? null;
-    this.customerNameInput = customer?.name ?? '';
+    const nameParts = customer?.name.trim().split(/\s+/) ?? [];
+    this.customerFirstNameInput = nameParts.shift() ?? '';
+    this.customerLastNameInput = nameParts.join(' ');
     this.customerEmailInput = customer?.email ?? '';
     this.customerPhoneInput = customer?.phone ?? '';
     this.modal.set('customer');
   }
 
   public saveCustomer(): void {
-    const name = this.customerNameInput.trim();
+    const firstName = this.customerFirstNameInput.trim();
+    const lastName = this.customerLastNameInput.trim();
     const email = this.customerEmailInput.trim();
     const phone = this.customerPhoneInput.trim();
-    if (!name || !email || !phone) {
+    if (!firstName) {
       this.notify('error', 'Eksik bilgi', 'Müşteri bilgilerini kontrol edin.');
       return;
     }
 
-    if (this.customerEditId) {
-      this.customers.update((customers) =>
-        customers.map((customer) =>
-          customer.id === this.customerEditId ? { ...customer, name, email, phone } : customer,
-        ),
-      );
-    } else {
-      const id = `CUS-${String(this.customers().length + 1).padStart(3, '0')}`;
-      this.customers.update((customers) => [...customers, { id, name, email, phone }]);
+    const createPayload: CustomerCreatePayload = {
+      firstName: firstName || null,
+      lastName: lastName || null,
+      email: email || null,
+      phoneNumber: phone || null,
+    };
+
+    const customerId = this.customerEditId;
+    if (customerId) {
+      const payload: CustomerUpdatePayload = {
+        id: customerId,
+        ...createPayload,
+        isActive: null,
+      };
+      this.http
+        .put<void>(`${this.apiUrl}/api/Customers/${encodeURIComponent(customerId)}`, payload)
+        .subscribe({
+          next: () => {
+            const updated: Customer = {
+              id: customerId,
+              name: `${firstName} ${lastName}`.trim(),
+              email,
+              phone,
+            };
+            this.customers.update((customers) =>
+              customers.map((customer) => (customer.id === customerId ? updated : customer)),
+            );
+            this.closeModal();
+            this.notify('success', 'Müşteri güncellendi', 'Müşteri bilgileri kaydedildi.');
+          },
+          error: (error: unknown) => this.showCustomerError(error),
+        });
+      return;
     }
-    this.closeModal();
-    this.notify('success', 'Müşteri kaydedildi', 'Müşteri listesi güncellendi.');
+
+    this.http.post<CustomerApiModel>(`${this.apiUrl}/api/Customers`, createPayload).subscribe({
+      next: (response) => {
+        const id = `CUS-${String(this.customers().length + 1).padStart(3, '0')}`;
+        const created = this.mapCustomer(response, id);
+        this.customers.update((customers) => [...customers, created]);
+        this.closeModal();
+        this.notify('success', 'Müşteri kaydedildi', 'Yeni müşteri listeye ve API’ye bağlandı.');
+      },
+      error: (error: unknown) => this.showCustomerError(error),
+    });
+  }
+
+  public async deleteCustomer(customer: Customer): Promise<void> {
+    const confirmed = await this.notifications.confirm(
+      'Müşteri silinsin mi?',
+      `${customer.name} kaydı kalıcı olarak silinecek.`,
+      'Müşteriyi sil',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.http
+      .delete<void>(`${this.apiUrl}/api/Customers/${encodeURIComponent(customer.id)}`)
+      .subscribe({
+        next: () => {
+          this.customers.update((customers) =>
+            customers.filter((item) => item.id !== customer.id),
+          );
+          this.notify('success', 'Müşteri silindi', `${customer.name} müşteri listesinden kaldırıldı.`);
+        },
+        error: (error: unknown) => this.showCustomerError(error, 'silinemedi'),
+      });
+  }
+
+  private loadCustomers(): void {
+    if (!this.browser) {
+      return;
+    }
+
+    const params = new HttpParams()
+      .set('pageNumber', '1')
+      .set('pageSize', '20');
+
+    this.http.get<CustomerApiModel[] | CustomerPagedResponse>(`${this.apiUrl}/api/Customers`, { params }).subscribe({
+      next: (response) => {
+        const rows = Array.isArray(response)
+          ? response
+          : response.items ?? response.customers ?? response.data ?? [];
+        this.customers.set(rows.map((customer, index) => this.mapCustomer(customer, `CUS-${String(index + 1).padStart(3, '0')}`)));
+      },
+      error: (error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status !== 401) {
+          this.notify('error', 'Müşteriler yüklenemedi', 'API ile bağlantı kurulamadı.');
+        }
+      },
+    });
+  }
+
+  private mapCustomer(customer: CustomerApiModel, fallbackId: string): Customer {
+    const id = customer.id ?? customer.customerId;
+    const firstName = customer.firstName?.trim() ?? '';
+    const lastName = customer.lastName?.trim() ?? '';
+    const apiName = `${firstName} ${lastName}`.trim();
+
+    return {
+      id: id === undefined || id === null ? fallbackId : String(id),
+      name: customer.name?.trim() || apiName || 'İsimsiz müşteri',
+      email: customer.email?.trim() ?? '',
+      phone: customer.phoneNumber?.trim() ?? customer.phone?.trim() ?? '',
+    };
+  }
+
+  private showCustomerError(error: unknown, action = 'kaydedilemedi'): void {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 400) {
+        this.notify('error', `Müşteri ${action}`, 'Gönderilen müşteri bilgilerini kontrol edin.');
+        return;
+      }
+      if (error.status === 401) {
+        this.notify('error', 'Oturum süresi doldu', 'Lütfen tekrar giriş yapın.');
+        return;
+      }
+    }
+    this.notify('error', `Müşteri ${action}`, 'API ile bağlantı kurulamadı.');
   }
 
   public openAccountModal(): void {
