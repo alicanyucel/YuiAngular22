@@ -26,6 +26,11 @@ export class AppLogin {
       return;
     }
 
+    if (!this.username.trim() || !this.password) {
+      this.errorMessage.set('Kullanıcı adı ve parola zorunludur.');
+      return;
+    }
+
     this.errorMessage.set('');
     this.loading.set(true);
     this.auth

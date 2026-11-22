@@ -31,7 +31,7 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<void> {
     const apiUrl = environment.apiUrl.replace(/\/+$/, '');
     return this.http
-      .post<LoginResponse>(`${apiUrl}/api/Auth/login`, credentials)
+      .post<LoginResponse>(`${apiUrl}/api/Auth/Login`, credentials)
       .pipe(
         map((response) => {
           if (typeof response.accessToken !== 'string' || !response.accessToken.trim()) {
