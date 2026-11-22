@@ -493,9 +493,17 @@ export class App {
 
     this.http.post<CustomerApiModel | null>(`${this.apiUrl}/api/Customers`, createPayload).subscribe({
       next: (response) => {
-        const id = `CUS-${String(this.customers().length + 1).padStart(3, '0')}`;
+        const apiId = response?.id ?? response?.customerId;
+        if (apiId === undefined || apiId === null || !String(apiId).trim()) {
+          this.closeModal();
+          this.loadCustomers();
+          this.notify('success', 'Müşteri kaydedildi', 'Müşteri bilgileri API’ye kaydedildi.');
+          return;
+        }
+
+        const id = String(apiId);
         const created: Customer = {
-          ...this.mapCustomer(response ?? {}, id),
+          ...this.mapCustomer(response, id),
           name: `${firstName} ${lastName}`.trim(),
           firstName,
           lastName,
@@ -576,7 +584,7 @@ export class App {
   private showCustomerError(error: unknown, action = 'kaydedilemedi'): void {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 400) {
-        this.notify('error', `Müşteri ${action}`, 'Gönderilen müşteri bilgilerini kontrol edin.');
+        this.notify('error', `Müşteri ${action}`, this.customerApiErrorMessage(error) ?? 'Gönderilen müşteri bilgilerini kontrol edin.');
         return;
       }
       if (error.status === 401) {
@@ -584,19 +592,44 @@ export class App {
         return;
       }
       if (error.status === 403) {
-        this.notify('error', `Müşteri ${action}`, 'Bu işlem için yönetici yetkisi gerekiyor.');
+        this.notify('error', `Müşteri ${action}`, this.customerApiErrorMessage(error) ?? 'Bu işlem için yönetici yetkisi gerekiyor.');
         return;
       }
       if (error.status === 404) {
-        this.notify('error', `Müşteri ${action}`, 'Müşteri kaydı bulunamadı. Listeyi yenileyip tekrar deneyin.');
+        this.notify('error', `Müşteri ${action}`, this.customerApiErrorMessage(error) ?? 'Müşteri kaydı bulunamadı. Listeyi yenileyip tekrar deneyin.');
+        return;
+      }
+      if (error.status === 409) {
+        this.notify('error', `Müşteri ${action}`, this.customerApiErrorMessage(error) ?? 'Müşteriye bağlı kayıtlar nedeniyle işlem yapılamadı.');
         return;
       }
       if (error.status === 0) {
         this.notify('error', `Müşteri ${action}`, 'Sunucuya bağlanılamadı.');
         return;
       }
+      this.notify('error', `Müşteri ${action}`, this.customerApiErrorMessage(error) ?? `Sunucu isteği reddetti (${error.status}).`);
+      return;
     }
     this.notify('error', `Müşteri ${action}`, 'İstek tamamlanamadı. Lütfen tekrar deneyin.');
+  }
+
+  private customerApiErrorMessage(error: HttpErrorResponse): string | undefined {
+    const body: unknown = error.error;
+    if (typeof body === 'string' && body.trim()) {
+      return body;
+    }
+    if (body && typeof body === 'object') {
+      if ('detail' in body && typeof body.detail === 'string' && body.detail.trim()) {
+        return body.detail;
+      }
+      if ('message' in body && typeof body.message === 'string' && body.message.trim()) {
+        return body.message;
+      }
+      if ('title' in body && typeof body.title === 'string' && body.title.trim()) {
+        return body.title;
+      }
+    }
+    return undefined;
   }
 
   public openAccountModal(): void {
