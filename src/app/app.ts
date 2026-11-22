@@ -437,8 +437,8 @@ export class App {
   public openCustomerModal(customer?: Customer): void {
     this.customerEditId = customer?.id ?? null;
     const nameParts = customer?.name.trim().split(/\s+/) ?? [];
-    this.customerFirstNameInput = nameParts.shift() ?? '';
-    this.customerLastNameInput = nameParts.join(' ');
+    this.customerFirstNameInput = customer?.firstName ?? nameParts.shift() ?? '';
+    this.customerLastNameInput = customer?.lastName ?? nameParts.join(' ');
     this.customerEmailInput = customer?.email ?? '';
     this.customerPhoneInput = customer?.phone ?? '';
     this.modal.set('customer');
@@ -475,6 +475,8 @@ export class App {
             const updated: Customer = {
               id: customerId,
               name: `${firstName} ${lastName}`.trim(),
+              firstName,
+              lastName,
               email,
               phone,
             };
@@ -489,10 +491,17 @@ export class App {
       return;
     }
 
-    this.http.post<CustomerApiModel>(`${this.apiUrl}/api/Customers`, createPayload).subscribe({
+    this.http.post<CustomerApiModel | null>(`${this.apiUrl}/api/Customers`, createPayload).subscribe({
       next: (response) => {
         const id = `CUS-${String(this.customers().length + 1).padStart(3, '0')}`;
-        const created = this.mapCustomer(response, id);
+        const created: Customer = {
+          ...this.mapCustomer(response ?? {}, id),
+          name: `${firstName} ${lastName}`.trim(),
+          firstName,
+          lastName,
+          email,
+          phone,
+        };
         this.customers.update((customers) => [...customers, created]);
         this.closeModal();
         this.notify('success', 'Müşteri kaydedildi', 'Yeni müşteri listeye ve API’ye bağlandı.');
@@ -557,6 +566,8 @@ export class App {
     return {
       id: id === undefined || id === null ? fallbackId : String(id),
       name: customer.name?.trim() || apiName || 'İsimsiz müşteri',
+      firstName,
+      lastName,
       email: customer.email?.trim() ?? '',
       phone: customer.phoneNumber?.trim() ?? customer.phone?.trim() ?? '',
     };
@@ -572,8 +583,20 @@ export class App {
         this.notify('error', 'Oturum süresi doldu', 'Lütfen tekrar giriş yapın.');
         return;
       }
+      if (error.status === 403) {
+        this.notify('error', `Müşteri ${action}`, 'Bu işlem için yönetici yetkisi gerekiyor.');
+        return;
+      }
+      if (error.status === 404) {
+        this.notify('error', `Müşteri ${action}`, 'Müşteri kaydı bulunamadı. Listeyi yenileyip tekrar deneyin.');
+        return;
+      }
+      if (error.status === 0) {
+        this.notify('error', `Müşteri ${action}`, 'Sunucuya bağlanılamadı.');
+        return;
+      }
     }
-    this.notify('error', `Müşteri ${action}`, 'API ile bağlantı kurulamadı.');
+    this.notify('error', `Müşteri ${action}`, 'İstek tamamlanamadı. Lütfen tekrar deneyin.');
   }
 
   public openAccountModal(): void {
