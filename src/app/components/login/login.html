@@ -1,0 +1,44 @@
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <a class="login-brand" href="/" aria-label="Footra ana sayfa">
+      <span class="login-brand-mark">F</span>
+      <span>FOOTRA</span>
+    </a>
+
+    <p class="login-eyebrow">YÖNETİM PANELİ</p>
+    <h1 id="login-title">Tekrar hoş geldiniz</h1>
+    <p class="login-description">Devam etmek için hesabınıza giriş yapın.</p>
+
+    <form (ngSubmit)="login()">
+      <label for="username">Kullanıcı adı</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        [(ngModel)]="username"
+        autocomplete="username"
+        required
+      />
+
+      <label for="password">Parola</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        [(ngModel)]="password"
+        autocomplete="current-password"
+        required
+      />
+
+      @if (errorMessage()) {
+        <p class="login-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button class="login-submit" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Giriş yapılıyor…' : 'Giriş yap' }}
+      </button>
+    </form>
+
+    <p class="login-footnote">FOOTRA · GÜVENLİ YÖNETİCİ ERİŞİMİ</p>
+  </section>
+</main>

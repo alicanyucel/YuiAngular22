@@ -1,18 +1,22 @@
-<div class="app-layout">
-  <app-sidebar [app]="this" />
+@if (showLogin()) {
+  <router-outlet />
+} @else {
+  <div class="app-layout">
+    <app-sidebar [app]="this" />
 
-  <div class="workspace">
-    <app-topbar [app]="this" />
+    <div class="workspace">
+      <app-topbar [app]="this" />
 
-    <main class="page-content">
-      <router-outlet />
-    </main>
+      <main class="page-content">
+        <router-outlet />
+      </main>
 
-    <footer class="app-footer">
-      <span>© 2026 FOOTRA · Ali Can Yücel tarafından hazırlandı</span>
-      <span><i></i> DEMO SİSTEMİ · GERÇEK İŞLEM YAPILMAZ</span>
-    </footer>
+      <footer class="app-footer">
+        <span>© 2026 FOOTRA · Ali Can Yücel tarafından hazırlandı</span>
+        <span><i></i> DEMO SİSTEMİ · GERÇEK İŞLEM YAPILMAZ</span>
+      </footer>
+    </div>
   </div>
-</div>
 
-<app-operation-modal [app]="this" />
+  <app-operation-modal [app]="this" />
+}

@@ -72,6 +72,8 @@ export class App {
   public readonly faInfo = faCircleInfo;
   public readonly Math = Math;
   public readonly pageSize = 8;
+  private readonly currentUrl = signal(this.router.url);
+  public readonly showLogin = computed(() => this.currentUrl().split(/[/?]/)[1] === 'login');
 
   public readonly customers = signal<Customer[]>([
     { id: 'CUS-001', name: 'Alican Yücel', email: 'alican@example.com', phone: '+90 532 000 00 01' },
@@ -205,6 +207,7 @@ export class App {
     this.syncViewWithUrl(this.router.url);
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects);
         this.syncViewWithUrl(event.urlAfterRedirects);
       }
     });

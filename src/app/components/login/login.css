@@ -1,0 +1,136 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 18% 8%, #16313a 0, transparent 38%),
+    #0b0f18;
+  color: #e7edf5;
+  font: 14px/1.5 Inter, "Segoe UI", Arial, sans-serif;
+}
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: min(100%, 410px);
+  padding: 38px;
+  border: 1px solid #222e3d;
+  border-radius: 12px;
+  background: #111824;
+  box-shadow: 0 24px 80px #0006;
+}
+
+.login-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 42px;
+  color: #e7edf5;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-decoration: none;
+}
+
+.login-brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #4ce1dc;
+  color: #4ce1dc;
+  clip-path: polygon(12% 0, 100% 0, 100% 72%, 72% 100%, 0 100%, 0 12%);
+}
+
+.login-eyebrow {
+  margin: 0 0 8px;
+  color: #4ce1dc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+h1 {
+  margin: 0 0 7px;
+  font-size: 25px;
+  letter-spacing: -.03em;
+}
+
+.login-description {
+  margin: 0 0 27px;
+  color: #8190a3;
+  font-size: 12px;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  margin-top: 5px;
+  color: #aab6c5;
+  font-size: 11px;
+}
+
+input {
+  width: 100%;
+  height: 42px;
+  padding: 0 11px;
+  border: 1px solid #2a3746;
+  border-radius: 5px;
+  outline: none;
+  background: #0d141e;
+  color: #e7edf5;
+  font: inherit;
+}
+
+input:focus {
+  border-color: #4ce1dc;
+  box-shadow: 0 0 0 2px #4ce1dc19;
+}
+
+.login-error {
+  margin: 4px 0 0;
+  color: #ff8290;
+  font-size: 11px;
+}
+
+.login-submit {
+  min-height: 42px;
+  margin-top: 9px;
+  border: 0;
+  border-radius: 5px;
+  background: #087b78;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-submit:hover:not(:disabled) {
+  background: #0b9994;
+}
+
+.login-submit:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+.login-footnote {
+  margin: 27px 0 0;
+  color: #66778a;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 23px;
+  }
+}
